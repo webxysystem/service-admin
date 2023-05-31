@@ -65,5 +65,7 @@ export const getUsers = async () => {
 }
 
 export const getModerators = async (page,size) => {
-  return await User.find().skip(page * size).limit(size);
+  return await User.find().skip(page * size).limit(size).populate({
+      path: "accountId"
+    })
 }

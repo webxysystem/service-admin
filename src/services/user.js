@@ -17,6 +17,13 @@ export const getAccountDetail = async (accountId, page, size) => {
     })
 }
 
+export const getModelFindId = async (modelId) => {
+  return await Model.findById(modelId).populate({
+    path: "accountId",
+    select:["amount"]
+  })
+}
+
 export const createUser = async (user) => {
   const userEncrypt = await encryptPass(user);
   return await User.create(userEncrypt);

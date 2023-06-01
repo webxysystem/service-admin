@@ -1,6 +1,21 @@
 import User from "../models/user";
-import Model from "../models/model"
+import Model from "../models/model";
+import Account from "../models/account";
+import PaymentMethod from "../models/paymentMethod";
 import bcrypt from "bcryptjs";
+var ObjectId = require("mongoose").Types.ObjectId;
+
+export const getAccountDetail = async (accountId, page, size) => {
+  return await Account.findById(accountId).populate({
+    path: "commissions",
+    select: ["_id", "amountIncome"],
+    options: { skip: page * size, limit: size },
+    }).populate({
+    path: "transactions",
+    select: ["_id", "amount","createdAt"],
+    options: { skip: page * size, limit: size },
+    })
+}
 
 export const createUser = async (user) => {
   const userEncrypt = await encryptPass(user);
@@ -68,4 +83,15 @@ export const getModerators = async (page,size) => {
   return await User.find().skip(page * size).limit(size).populate({
       path: "accountId"
     })
+}
+
+export const getModelsByModeratorId = async (moderatorId, page, size) => {
+  return await Model.find(
+    { moderatorId: new ObjectId(moderatorId)},
+    {},
+    { skip: page * size, limit: size })
+}
+
+export const getMethodsPaymentAsigne = async (userId) => {
+  return await PaymentMethod.find({ assignedTo: { $in: [ new ObjectId(userId)] } });
 }

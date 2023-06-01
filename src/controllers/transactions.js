@@ -1,7 +1,29 @@
 import express from "express";
-import { registerTransactionIncome } from "../services/transactions"
+import { registerTransactionIncome, getTransactions } from "../services/transactions"
 import { registerNewPaymentMethod } from "../services/balance";
 let router = express.Router();
+
+
+router.get("/all", async (req, res) => {
+  try {
+    
+    let { page, size } = req.query;
+    page ? page : (page = 0);
+    size ? size : (size = 10);
+
+    const response = await getTransactions( page, size).catch(e => {
+      throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
+    });
+    res.status(200).send(response)
+  } catch (error) {
+    if (error.code && error.message) {
+      res.status(error.code).json(error.message);
+    } else {
+      //TODO: send notification support
+      res.status(500).json(error);
+    }
+  }
+})
 
 
 router.post("/register", async (req, res) => {
@@ -14,7 +36,6 @@ router.post("/register", async (req, res) => {
     }
   
     const response = await registerTransactionIncome(payload).catch(e => {
-      console.log(e);
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });
     res.status(200).send(response)

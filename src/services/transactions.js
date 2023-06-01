@@ -25,3 +25,7 @@ export const getTransactionsModel = async (modelId, page, size) => {
     { model: ObjectId(modelId) }, null,
     { skip: page * size, limit: size }).sort({ date: 1, _id: 1 })
 }
+
+export const getTransactions = async (page, size) => {
+  return await Transaction.find().skip(page * size).limit(size)
+}

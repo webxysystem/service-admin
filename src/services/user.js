@@ -92,6 +92,10 @@ export const getModelsByModeratorId = async (moderatorId, page, size) => {
     { skip: page * size, limit: size })
 }
 
+export const getModels = async (page, size) => {
+  return await Model.find().skip(page * size).limit(size)
+}
+
 export const getMethodsPaymentAsigne = async (userId) => {
   return await PaymentMethod.find({ assignedTo: { $in: [ new ObjectId(userId)] } });
 }

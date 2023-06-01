@@ -27,5 +27,11 @@ export const getTransactionsModel = async (modelId, page, size) => {
 }
 
 export const getTransactions = async (page, size) => {
-  return await Transaction.find().skip(page * size).limit(size)
+  return await Transaction.find().skip(page * size).limit(size).populate({
+      path: "moderator"
+    }).populate({
+      path: "model"
+    }).populate({
+      path:"paymentMethod"
+    })
 }

@@ -93,7 +93,11 @@ export const getModelsByModeratorId = async (moderatorId, page, size) => {
 }
 
 export const getModels = async (page, size) => {
-  return await Model.find().skip(page * size).limit(size)
+  return await Model.find().skip(page * size).limit(size).populate({
+      path: "moderatorId"
+    }).populate({
+      path: "accountId"
+    })
 }
 
 export const getMethodsPaymentAsigne = async (userId) => {

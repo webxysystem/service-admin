@@ -14,10 +14,12 @@ router.post("/register", async (req, res) => {
     }
   
     const response = await registerTransactionIncome(payload).catch(e => {
+      console.log(e);
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });
     res.status(200).send(response)
   } catch (error) {
+    console.log(error);
     if (error.code && error.message) {
       res.status(error.code).json(error.message);
     } else {

@@ -8,7 +8,7 @@ const transactionSchema = new mongoose.Schema({
   client: String,
   service: String,
   channel: String,
-  voucher: { type: mongoose.Schema.Types.ObjectId, ref: 'Image' },
+  voucher: String,
   type: Object,
   createdAt: Date
 });

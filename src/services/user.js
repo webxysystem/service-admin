@@ -3,6 +3,7 @@ import Model from "../models/model";
 import Account from "../models/account";
 import PaymentMethod from "../models/paymentMethod";
 import bcrypt from "bcryptjs";
+import { findTimesRecordModelsToday } from "./management";
 var ObjectId = require("mongoose").Types.ObjectId;
 
 export const getAccountDetail = async (accountId, page, size) => {
@@ -97,10 +98,22 @@ export const getModerators = async (page,size) => {
 }
 
 export const getModelsByModeratorId = async (moderatorId, page, size) => {
-  return await Model.find(
+let models = await Model.find(
     { moderatorId: new ObjectId(moderatorId)},
     {},
     { skip: page * size, limit: size })
+  const modelsIds = models.map(model => model._id);
+  let times = await findTimesRecordModelsToday(modelsIds);
+  models = models.map(model => model.toObject());
+  times = times.map(time => time.toObject());
+
+  return models.map(model => {
+    const time = times.find(t => t.model.toString() == new ObjectId(model._id).toString());
+    const timeWork = time ? getTime(time.seconds) : '0h';
+
+    model.timeWork = timeWork;
+    return model;
+  });
 }
 
 export const getModels = async (page, size) => {
@@ -113,4 +126,27 @@ export const getModels = async (page, size) => {
 
 export const getMethodsPaymentAsigne = async (userId) => {
   return await PaymentMethod.find({ assignedTo: { $in: [ new ObjectId(userId)] } });
+}
+
+const getTime = (seconds) => {
+  let minutes = Math.floor(seconds / 60);
+  let horas = Math.floor(minutes / 60);
+
+  minutes %= 60;
+  seconds %= 60;
+
+  let result = '';
+
+  if (horas > 0) {
+    result += `${horas} h${horas !== 1 ? 's' : ''}`;
+    if (minutes > 0) {
+      result += ` ${minutes} min${minutes !== 1 ? 's' : ''}`;
+    }
+  } else if (minutes > 0) {
+    result += `${minutes} min${minutes !== 1 ? 's' : ''}`;
+  } else {
+    result += `${seconds} seg${seconds !== 1 ? 's' : ''}`;
+  }
+
+  return result;
 }

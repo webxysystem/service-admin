@@ -1,6 +1,7 @@
 import express from "express";
 import { createUser, login, registerModel, getUsers, getModerators, getModelsByModeratorId, getAccountDetail, getMethodsPaymentAsigne, getModels, getModelFindId } from "../services/user";
 import { createAccount } from "../services/account";
+import { activateOrDeactivateModel } from "../services/management"
 import auth from "../middlewares/validateToken";
 import { generateJWT, generateRefreshJWT } from "../services/token";
 
@@ -222,6 +223,23 @@ router.post("/register-model", auth, async (req, res) => {
     payload.moderatorId = userId;
 
     const response = await registerModel(payload).catch(e => {
+      throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
+    });
+    res.status(200).send(response)
+  } catch (error) {
+    console.error(error);
+  }
+})
+
+router.put('/activate-or-deactivate-model', auth, async (req, res) => {
+    try {
+    
+    const payload = req.body;
+    if (!payload.modelId || payload.active == undefined) {
+      throw { code: 400, message: 'Revise su peticion e intente nuevamente'}
+    }
+      
+      const response = await activateOrDeactivateModel(payload.modelId, payload.active).catch(e => {
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });
     res.status(200).send(response)

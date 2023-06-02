@@ -8,7 +8,7 @@ export const registerTransactionIncome = async (transaction) => {
     type: 1,
     title:'income'
   };
-  
+
   const transactionRegister = await Transaction.create(transaction);
   await registerCommission(transactionRegister);
   return transactionRegister;

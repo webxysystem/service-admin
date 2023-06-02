@@ -68,6 +68,10 @@ export const getAccountByUserId = async (userId) => {
   return (await User.findById(userId))?.accountId?.toString()
 }
 
+export const getAccountByModelId = async (modelId) => {
+  return (await Model.findById(modelId))?.accountId?.toString()
+}
+
 const encryptPass = async (user) => {
   const salt = await bcrypt.genSalt(10);
   const passEncript = await bcrypt.hash(user.password, salt);

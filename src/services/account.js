@@ -1,6 +1,6 @@
 import Account from "../models/account"
 import Commission from "../models/commission"
-import { getAccountByUserId } from "./user"
+import { getAccountByUserId, getAccountByModelId } from "./user"
 import { registerTransactionPaymentMethod, registerAdminCommsision, getPlataformComissionByPaymentMethod } from "./balance"
 
 const distributionMoney =  {
@@ -29,7 +29,7 @@ export const registerCommission = async (transaction) => {
   }
   
   //register commision model
-  const accountIdModel = await getAccountByUserId(transaction.model.toString());
+  const accountIdModel = await getAccountByModelId(transaction.model.toString());
   const commissionModel = (amount * distributionMoney['model']);
   await registerIncomeAccount(accountIdModel, transaction._id, commissionModel);
 

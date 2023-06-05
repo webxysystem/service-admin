@@ -17,7 +17,7 @@ export const registerTransactionIncome = async (transaction) => {
 export const getTransactionsModerator = async (moderatorId, page, size) => {
   return await Transaction.find(
     { moderator: new ObjectId(moderatorId) }, null,
-    { skip: page * size, limit: size }).sort({ date: 1, _id: 1 }).populate({
+    { skip: page * size, limit: size }).sort({ createdAt: -1, _id: -1 }).populate({
       path: "model",
       select: ["name"]
     }).populate({
@@ -29,7 +29,7 @@ export const getTransactionsModerator = async (moderatorId, page, size) => {
 export const getTransactionsModel = async (modelId, page, size) => {
   return await Transaction.find(
     { model: new ObjectId(modelId) }, null,
-    { skip: page * size, limit: size }).sort({ date: 1, _id: 1 }).sort({ date: 1, _id: 1 }).populate({
+    { skip: page * size, limit: size }).sort({ createdAt: -1, _id: -1 }).populate({
       path: "paymentMethod",
       select:["title"]
     })
@@ -42,5 +42,5 @@ export const getTransactions = async (page, size) => {
       path: "model"
     }).populate({
       path:"paymentMethod"
-    }).sort({ date: 1, _id: 1 })
+    }).sort({ createdAt: -1, _id: -1 })
 }

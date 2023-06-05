@@ -373,6 +373,13 @@ export const getAccountMaster = async () => {
       accountMaster = await AccountMaster.create(newAccountMasterLustList);
     }
   }
+
+  const amountTotalToday = (await getIncomeToday()).amount;
+  accountMaster = accountMaster.toObject()
+  accountMaster.totalBilled = amountTotalToday;
+  accountMaster.totalTax = await getAllTaxPaymentMethods();
+  accountMaster.totalAvailable = accountMaster.totalBilled - accountMaster.totalTax;
+
   return accountMaster;
 };
 
@@ -454,4 +461,15 @@ export const getPlataformComissionByPaymentMethod = async (paymentMethodId) => {
   const paymentMethod = await PaymentMethod.findById(paymentMethodId);
   const accountBusiness = await AccountBusiness.findById(paymentMethod.accountBusiness.toString());
   return accountBusiness.platformCommission;
+}
+
+const getAllTaxPaymentMethods = async () => {
+  const paymentMethods = await PaymentMethod.find();
+  let amountTax = 0;
+  for (const paymentMethod of paymentMethods) {
+    if (paymentMethod.paymentTax) {
+      amountTax = amountTax + paymentMethod.paymentTax
+    }
+  }
+  return amountTax;
 }

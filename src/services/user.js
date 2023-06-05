@@ -9,11 +9,12 @@ var ObjectId = require("mongoose").Types.ObjectId;
 export const getAccountDetail = async (accountId, page, size) => {
   return await Account.findById(accountId).populate({
     path: "commissions",
-    select: ["_id", "amountIncome"],
+    select: ["_id", "amountIncome", "transaction"],
     options: { skip: page * size, limit: size },
     }).populate({
     path: "transactions",
-    select: ["_id", "amount","createdAt"],
+      select: ["_id", "amount", "createdAt", "paymentMethod"],
+    populate:"paymentMethod",
     options: { skip: page * size, limit: size },
     })
 }

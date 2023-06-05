@@ -6,6 +6,7 @@ const paymentMethodSchema = new mongoose.Schema({
   password: String,
   amount: Number,
   enabled: Boolean,
+  paymentTax: Number,
   assignedTo: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   accountBusiness:
     { type: mongoose.Schema.Types.ObjectId, ref: 'AccountBusiness' },

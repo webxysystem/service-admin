@@ -214,7 +214,7 @@ router.post("/register-model", auth, async (req, res) => {
     const userId = req.userId;
     const payload = req.body;
 
-    if (!payload.name) {
+    if (!payload.name || !payload.email) {
       throw { code: 400, message: 'Revise su peticion e intente nuevamente'}
     }
   

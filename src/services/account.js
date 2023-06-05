@@ -1,5 +1,6 @@
 import Account from "../models/account"
 import Commission from "../models/commission"
+import PaymentMethod from "../models/paymentMethod";
 import { getAccountByUserId, getAccountByModelId } from "./user"
 import { registerTransactionPaymentMethod, registerAdminCommsision, getPlataformComissionByPaymentMethod } from "./balance"
 
@@ -25,7 +26,15 @@ export const registerCommission = async (transaction) => {
   let amount = transaction.amount;
   const plataformCommision = await getPlataformComissionByPaymentMethod(transaction.paymentMethod.toString());
   if (plataformCommision > 0) {
-    amount = amount * (100 - plataformCommision / 100);
+    const percent = (100 - plataformCommision) / 100;
+    const newAmount = amount * percent;
+    const payTax = amount - newAmount;
+    await PaymentMethod.findOneAndUpdate({ _id: transaction.paymentMethod.toString() }, {
+      $inc: {
+        paymentTax: payTax,
+      },
+    }, { new: true });
+    amount = newAmount;
   }
   
   //register commision model

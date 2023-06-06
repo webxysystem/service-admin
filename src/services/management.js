@@ -77,3 +77,15 @@ export const getPaymentMethodDetail = async (payId) => {
     populate:"paymentMethod",*/
     })
 }
+
+export const managementUsersInPaymentMethod = async (payId, usersId) => {
+  return await PaymentMethod.findOneAndUpdate(
+    { _id: new ObjectId(payId) },
+    {
+      $set: {
+        assignedTo: usersId
+      }
+    },
+    { new : true }
+  )
+}

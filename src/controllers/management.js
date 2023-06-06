@@ -1,6 +1,6 @@
 import express from "express";
 import auth from "../middlewares/validateToken";
-import { getAccountBusiness, getAccountBusinessDetail, getPaymentMethodByAccountBusiness, getPaymentMethodDetail } from "../services/management"
+import { getAccountBusiness, getAccountBusinessDetail, getPaymentMethodByAccountBusiness, getPaymentMethodDetail, managementUsersInPaymentMethod } from "../services/management"
 import { getAccountMaster } from "../services/balance";
 
 let router = express.Router();
@@ -91,6 +91,29 @@ router.get("/payment-method/:payId",  async (req, res) => {
 
     const response = await getPaymentMethodDetail(payId).catch(e => {
       console.log(e);
+      throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
+    });
+    res.status(200).send(response)
+  } catch (error) {
+    if (error.code && error.message) {
+      res.status(error.code).json(error.message);
+    } else {
+      //TODO: send notification support
+      res.status(500).json(error);
+    }
+  }
+})
+
+
+router.put("/management-users-payment-method", async (req, res) => {
+  try {
+    
+    const payload = req.body;
+    if (!payload.payId || !payload.usersId || payload.usersId.length < 1 ) {
+      throw { code: 400, message: 'Revise su peticion e intente nuevamente'}
+    }
+
+    const response = await managementUsersInPaymentMethod(payload.payId, payload.usersId).catch(e => {
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });
     res.status(200).send(response)

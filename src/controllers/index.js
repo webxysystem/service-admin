@@ -2,6 +2,7 @@ import express from "express";
 import userRouter from "./user"
 import transactionRouter from "./transactions"
 import managementRouter from "./management"
+import accontRouter from "./accounts"
 const router = express.Router();
 
 function createRouter(app) {
@@ -15,6 +16,7 @@ function createRouter(app) {
   router.use('/users', userRouter);
   router.use('/transactions', transactionRouter);
   router.use('/management', managementRouter);
+  router.use('/accounts', accontRouter);
 }
 
 

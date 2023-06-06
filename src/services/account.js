@@ -1,8 +1,11 @@
 import Account from "../models/account"
 import Commission from "../models/commission"
 import PaymentMethod from "../models/paymentMethod";
+import Payment from "../models/payment";
 import { getAccountByUserId, getAccountByModelId } from "./user"
 import { registerTransactionPaymentMethod, registerAdminCommsision, getPlataformComissionByPaymentMethod } from "./balance"
+var ObjectId = require("mongoose").Types.ObjectId;
+import moment from "moment";
 
 const distributionMoney =  {
   admin: 0.1,
@@ -78,6 +81,44 @@ const registerIncomeAccount = async (accountId, transactionId, amount) => {
       },
       $inc: {
         amount: amount,
+      },
+    },
+    { new: true }
+  )
+}
+
+export const getAccounts = async (page, size) => {
+  return await Account.find( {}, {},
+    { skip: page * size, limit: size })
+}
+
+export const registerPaymentInAccount = async (accountId) => {
+
+  const account = await Account.findById(accountId);
+
+  let payment = {
+    amount: account.amount,
+    account: account._id,
+    commissions: account.commissions,
+    transactions: account.transactions,
+  }
+
+  payment = await Payment.create(payment);
+  const today = moment().format("YYYY-MM-DD");
+  
+  return await Account.findOneAndUpdate(
+    { _id: new ObjectId(accountId) },
+    {
+      $set: {
+        commissions: [],
+        transactions: [],
+        lastPayment: today
+      },
+      $push: {
+        payments: {
+          $each: [payment._id],
+          $position: 0,
+        },
       },
     },
     { new: true }

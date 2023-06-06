@@ -1,4 +1,4 @@
-import Transaction from "../models/transaction"
+import Transaction from "../models/transaction";
 const ObjectId = require("mongoose").Types.ObjectId;
 import { registerCommission } from "./account";
 
@@ -43,4 +43,10 @@ export const getTransactions = async (page, size) => {
     }).populate({
       path:"paymentMethod"
     }).sort({ createdAt: -1, _id: -1 })
+}
+
+
+export const getTransactionsByPaymentMethodId = async (payId, page, size) => {
+  return await Transaction.find({paymentMethod: new ObjectId(payId)}, {},
+    { skip: page * size, limit: size }).sort({ createdAt: -1, _id: -1 })
 }

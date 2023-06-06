@@ -69,3 +69,11 @@ export const findTimesRecordModelsToday = async (modelsIds) => {
   })
   return await TimeRecord.find({ model: { $in: modelsIdsObjectIds }, day: today})
 }
+
+export const getPaymentMethodDetail = async (payId) => {
+  return await PaymentMethod.findById(payId).populate({
+    path: "assignedTo",
+    /*  select: ["_id", "amount", "createdAt", "paymentMethod"],
+    populate:"paymentMethod",*/
+    })
+}

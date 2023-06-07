@@ -121,13 +121,12 @@ router.post("/register-payment-method", async (req, res) => {
   try {
     
     const payload = req.body;
-    if (!payload.title || !payload.user || !payload.password || !payload.assignedTo || !payload.accountBusiness || !payload.isPrivate) {
+    if (!payload.title || !payload.user || !payload.password || !payload.assignedTo || !payload.accountBusiness ) {
       throw { code: 400, message: 'Revise su peticion e intente nuevamente'}
     }
 
     payload.private = payload.isPrivate;
     payload.amount = 0;
-    payload.enabled = true;
 
     const response = await registerNewPaymentMethod(payload).catch(e => {
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }

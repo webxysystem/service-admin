@@ -367,6 +367,7 @@ export const getAccountMaster = async () => {
       amountAdmin: 0,
       balance: [],
       accountBusiness: accountsAvailable,
+      computerSecurityFee: 0,
       enabled: true,
     };
     if (businessName) {

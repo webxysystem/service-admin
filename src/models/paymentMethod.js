@@ -9,7 +9,6 @@ const paymentMethodSchema = new mongoose.Schema({
   paymentTax: Number,
   assignedTo: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   accountBusiness:
-    { type: mongoose.Schema.Types.ObjectId, ref: 'AccountBusiness' },
-  private: Boolean
+    { type: mongoose.Schema.Types.ObjectId, ref: 'AccountBusiness' }
 })
 module.exports = mongoose.model('PaymentMethod', paymentMethodSchema);

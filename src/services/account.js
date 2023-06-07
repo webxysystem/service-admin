@@ -4,6 +4,7 @@ import PaymentMethod from "../models/paymentMethod";
 import Payment from "../models/payment";
 import Model from "../models/model";
 import User from "../models/user";
+import AccountMaster from "../models/accountMaster";
 import { getAccountByUserId, getAccountByModelId } from "./user"
 import { registerTransactionPaymentMethod, registerAdminCommsision, getPlataformComissionByPaymentMethod } from "./balance"
 var ObjectId = require("mongoose").Types.ObjectId;
@@ -113,8 +114,16 @@ export const getAccounts = async (page, size) => {
   return accounts;
 }
 
-export const registerPaymentInAccount = async (accountId) => {
+export const registerPaymentInAccount = async (userId) => {
 
+  let user = await Model.findById(userId);
+  if (user) {
+    await payFeeForWeekScurityComputer(user);
+  } else {
+    user = await User.findById(userId);
+  }
+
+  const accountId = user.accountId.toString();
   const account = await Account.findById(accountId);
 
   let payment = {
@@ -144,4 +153,50 @@ export const registerPaymentInAccount = async (accountId) => {
     },
     { new: true }
   )
+}
+
+const payFeeForWeekScurityComputer = async (model) => {
+
+  const payFeeForWeek = 30;
+  const moderator = await User.findById(model.moderatorId.toString());
+
+  /** fee for admin */
+  const adminFee = (distributionMoney['admin'] * payFeeForWeek);
+  const organizationFee = (distributionMoney['organization'] * payFeeForWeek);
+  const businessName = process.env.BUSINESS_NAME;
+  await AccountMaster.findOneAndUpdate(
+    { business: businessName },
+    {
+      $inc: {
+        amountOrganization: - organizationFee,
+        amountAdmin: - adminFee,
+        computerSecurityFee: payFeeForWeek
+      },
+    },
+    { new: true })
+      
+  /** fee for moderator */
+  const moderatorFee = (distributionMoney['moderator'] * payFeeForWeek);
+  await Account.findOneAndUpdate(
+    { _id: new ObjectId(moderator.accountId.toString()) },
+    {
+      $inc: {
+        amount: - moderatorFee,
+      },
+    },
+    { new: true }
+  )
+    
+  /** fee for model */
+  const modelFee = (distributionMoney['model'] * payFeeForWeek);
+  await Account.findOneAndUpdate(
+    { _id: new ObjectId(model.accountId.toString()) },
+    {
+      $inc: {
+        amount: - modelFee,
+      },
+    },
+    { new: true }
+  )
+    
 }

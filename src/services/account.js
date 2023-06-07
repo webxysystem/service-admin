@@ -2,10 +2,13 @@ import Account from "../models/account"
 import Commission from "../models/commission"
 import PaymentMethod from "../models/paymentMethod";
 import Payment from "../models/payment";
+import Model from "../models/model";
+import User from "../models/user";
 import { getAccountByUserId, getAccountByModelId } from "./user"
 import { registerTransactionPaymentMethod, registerAdminCommsision, getPlataformComissionByPaymentMethod } from "./balance"
 var ObjectId = require("mongoose").Types.ObjectId;
 import moment from "moment";
+import { getAccountBusinessDetail } from "./management";
 
 const distributionMoney =  {
   admin: 0.1,
@@ -88,8 +91,26 @@ const registerIncomeAccount = async (accountId, transactionId, amount) => {
 }
 
 export const getAccounts = async (page, size) => {
-  return await Account.find( {}, {},
-    { skip: page * size, limit: size })
+  const models = (await Model.find())?.map(model => model.toObject());
+  const moderators = (await User.find())?.map(user => user.toObject());
+
+  let accounts = (await Account.find({}, {},
+    { skip: page * size, limit: size }))?.map(acc => acc.toObject());
+  
+
+  
+  for (const model of models) {
+    const index = accounts.findIndex(acc => acc?._id.toString() == model.accountId.toString());
+
+    accounts[index].user = model;
+  }
+
+  for (const moderator of moderators) {
+    const index = accounts.findIndex(acc => acc?._id.toString() == moderator.accountId.toString())
+    accounts[index].user = moderator;
+  }
+
+  return accounts;
 }
 
 export const registerPaymentInAccount = async (accountId) => {

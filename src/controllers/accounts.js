@@ -1,7 +1,7 @@
 
 import express from "express";
 import auth from "../middlewares/validateToken";
-import { getAccounts, registerPaymentInAccount } from "../services/account";
+import { registerPaymentInAccount, getPayments } from "../services/account";
 
 let router = express.Router();
 
@@ -12,7 +12,7 @@ router.get("/payments",  async (req, res) => {
     page ? page : (page = 0);
     size ? size : (size = 10);
 
-    const response = await getAccounts(page, size).catch(e => {
+    const response = await getPayments(page, size).catch(e => {
       console.log(e);
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });

@@ -91,6 +91,7 @@ const registerIncomeAccount = async (accountId, transactionId, amount) => {
   )
 }
 
+/*
 export const getAccounts = async (page, size) => {
   const models = (await Model.find())?.map(model => model.toObject());
   const moderators = (await User.find())?.map(user => user.toObject());
@@ -112,7 +113,7 @@ export const getAccounts = async (page, size) => {
   }
 
   return accounts;
-}
+} */
 
 export const registerPaymentInAccount = async (userId) => {
 
@@ -131,6 +132,7 @@ export const registerPaymentInAccount = async (userId) => {
     account: account._id,
     commissions: account.commissions,
     transactions: account.transactions,
+    date: new Date()
   }
 
   payment = await Payment.create(payment);
@@ -199,4 +201,57 @@ const payFeeForWeekScurityComputer = async (model) => {
     { new: true }
   )
     
+}
+
+export const getPayments = async (page, size) => {
+  
+  const models = (await Model.find())?.map(model => model.toObject());
+  const moderators = (await User.find())?.map(user => user.toObject());
+
+const currentDate = new Date();
+const dayOfWeek = currentDate.getDay();
+const difference = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; 
+const monday = new Date(currentDate.setDate(currentDate.getDate() + difference));
+
+  // Obtén la fecha del domingo de esta semana
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+
+  let payments = await Payment.find(
+    {
+      date: {
+        $gte: monday,
+        $lte: sunday,
+      }
+    }, {},
+    { skip: page * size, limit: size })?.map(pay => pay.toObject());
+  
+  if (payments && payments.length > 0) {
+      const paymentsIds = payments.map(payment => {
+      return new ObjectId(payment._id);
+    })
+
+    const accounts = await Account.find({ payments: { $in: paymentsIds } })?.map(acc => acc.toObject());
+
+      for (const model of models) {
+      const index = accounts.findIndex(acc => acc?._id.toString() == model.accountId.toString());
+
+      accounts[index].user = model;
+    }
+
+    for (const moderator of moderators) {
+      const index = accounts.findIndex(acc => acc?._id.toString() == moderator.accountId.toString())
+      accounts[index].user = moderator;
+    }
+
+
+    for (const account of accounts) {
+      const index = payments.findIndex(pay => pay?.account.toString() == account._id.toString())
+      payments[index].user = account.user;
+    }
+  } else {
+    payments = [];
+  }
+
+  return payments;
 }

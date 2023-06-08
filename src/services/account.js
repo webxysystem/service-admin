@@ -142,6 +142,7 @@ export const registerPaymentInAccount = async (userId) => {
     { _id: new ObjectId(accountId) },
     {
       $set: {
+        amount: 0,
         commissions: [],
         transactions: [],
         lastPayment: today

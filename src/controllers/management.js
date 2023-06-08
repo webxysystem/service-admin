@@ -118,6 +118,7 @@ router.put("/management-users-payment-method", async (req, res) => {
     });
     res.status(200).send(response)
   } catch (error) {
+    
     if (error.code && error.message) {
       res.status(error.code).json(error.message);
     } else {

@@ -5,6 +5,7 @@ const paymentSchema = new mongoose.Schema({
   account: { type: mongoose.Schema.Types.ObjectId, ref: 'Account' },
   commissions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Commission' }],
   transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
+  voucher: String,
   date: Date
 });
 

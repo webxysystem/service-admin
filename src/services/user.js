@@ -5,6 +5,7 @@ import PaymentMethod from "../models/paymentMethod";
 import bcrypt from "bcryptjs";
 import { findTimesRecordModelsToday } from "./management";
 var ObjectId = require("mongoose").Types.ObjectId;
+import moment from "moment";
 
 export const getAccountDetail = async (accountId, page, size) => {
   return await Account.findById(accountId).populate({
@@ -92,10 +93,39 @@ export const getUsers = async () => {
   return await User.find();
 }
 
-export const getModerators = async (page,size) => {
-  return await User.find().skip(page * size).limit(size).populate({
+export const getModerators = async (page, size, isPayment) => {
+  
+  if (!isPayment) {
+    return await User.find().skip(page * size).limit(size).populate({
       path: "accountId"
     })
+  } else {
+
+    const minDate = new Date(moment().subtract(7, 'days').toDate());
+
+    return await User.aggregate([
+        {
+          $lookup: {
+            from: "accounts",
+            localField: "accountId",
+            foreignField: "_id",
+            as: "account",
+          },
+        },
+        {
+          $match: {
+            $and: [
+              { "account.amount": { $gt: 0 } },
+              { "account.lastPayment": { $lte: minDate } },
+            ],
+          },
+        },
+        { $unwind: "$account" },
+        { $skip: parseInt(page * size) },
+        { $limit: parseInt(size) },
+    ])
+    
+  }
 }
 
 export const getModelsByModeratorId = async (moderatorId, page, size) => {
@@ -117,12 +147,48 @@ let models = await Model.find(
   });
 }
 
-export const getModels = async (page, size) => {
-  return await Model.find().skip(page * size).limit(size).populate({
+export const getModels = async (page, size, isPayment) => {
+  if (!isPayment) {
+    return await Model.find().skip(page * size).limit(size).populate({
       path: "moderatorId"
     }).populate({
       path: "accountId"
     })
+  } else {
+
+    const minDate = new Date(moment().subtract(7, 'days').toDate());
+
+    return await Model.aggregate([
+        {
+          $lookup: {
+            from: "accounts",
+            localField: "accountId",
+            foreignField: "_id",
+            as: "account",
+          },
+        },
+        {
+          $match: {
+            $and: [
+              { "account.amount": { $gt: 0 } },
+              { "account.lastPayment": { $lte: minDate } },
+            ],
+          },
+        },
+        { $unwind: "$account" },
+        { $skip: parseInt(page * size) },
+        { $limit: parseInt(size) },
+        {
+          $lookup: {
+            from: "users",
+            localField: "moderatorId",
+            foreignField: "_id",
+            as: "moderator",
+          },
+        },
+        { $unwind: "$moderator" },
+    ])
+  }
 }
 
 export const getMethodsPaymentAsigne = async (userId) => {

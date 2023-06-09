@@ -6,7 +6,7 @@ const accountSchema = new mongoose.Schema({
   commissions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Commission' }],
   transactions: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Transaction' }],
   payments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Payment' }],
-  lastPayment: String,
+  lastPayment: Date,
   enabled: Boolean
 })
 module.exports = mongoose.model('Account', accountSchema); 

@@ -37,7 +37,7 @@ router.post("/register-payment",  async (req, res) => {
       throw { code: 400, message: 'Revise su peticion e intente nuevamente'}
     }
 
-    const response = await registerPaymentInAccount(payload.userId).catch(e => {
+    const response = await registerPaymentInAccount(payload.userId, payload.voucher).catch(e => {
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });
     res.status(200).send(response)

@@ -89,3 +89,7 @@ export const managementUsersInPaymentMethod = async (payId, usersId) => {
     { new : true }
   )
 }
+
+export const getAllpaymentMethods = async () => {
+  return await PaymentMethod.find();
+}

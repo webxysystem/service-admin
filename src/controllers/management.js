@@ -1,7 +1,7 @@
 import express from "express";
 import auth from "../middlewares/validateToken";
-import { getAccountBusiness, getAccountBusinessDetail, getPaymentMethodByAccountBusiness, getPaymentMethodDetail, managementUsersInPaymentMethod } from "../services/management"
-import { getAccountMaster } from "../services/balance";
+import { getAccountBusiness, getAccountBusinessDetail, getPaymentMethodByAccountBusiness, getPaymentMethodDetail, managementUsersInPaymentMethod, getAllpaymentMethods } from "../services/management"
+import { getAccountMaster, updateAccountMaster } from "../services/balance";
 
 let router = express.Router();
 
@@ -70,7 +70,6 @@ router.get("/payment-methods/:accountId",  async (req, res) => {
     size ? size : (size = 10);
 
     const response = await getPaymentMethodByAccountBusiness(accountId, page, size).catch(e => {
-      console.log(e);
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });
     res.status(200).send(response)
@@ -90,7 +89,23 @@ router.get("/payment-method/:payId",  async (req, res) => {
     const payId = req.params.payId;
 
     const response = await getPaymentMethodDetail(payId).catch(e => {
-      console.log(e);
+      throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
+    });
+    res.status(200).send(response)
+  } catch (error) {
+    if (error.code && error.message) {
+      res.status(error.code).json(error.message);
+    } else {
+      //TODO: send notification support
+      res.status(500).json(error);
+    }
+  }
+})
+
+router.get("/payment-methods",  async (req, res) => {
+  try {
+
+    const response = await getAllpaymentMethods().catch(e => {
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });
     res.status(200).send(response)
@@ -114,6 +129,29 @@ router.put("/management-users-payment-method", async (req, res) => {
     }
 
     const response = await managementUsersInPaymentMethod(payload.payId, payload.usersId).catch(e => {
+      throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
+    });
+    res.status(200).send(response)
+  } catch (error) {
+    
+    if (error.code && error.message) {
+      res.status(error.code).json(error.message);
+    } else {
+      //TODO: send notification support
+      res.status(500).json(error);
+    }
+  }
+})
+
+router.put("/update-account-master", async (req, res) => {
+  try {
+    
+    const payload = req.body;
+    if (payload.amountOrganization < 0 || payload.amountAdmin < 0 || payload.computerSecurityFee < 0  ) {
+      throw { code: 400, message: 'Revise su peticion e intente nuevamente'}
+    }
+
+    const response = await updateAccountMaster(payload).catch(e => {
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });
     res.status(200).send(response)

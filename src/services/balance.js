@@ -354,6 +354,22 @@ const createNewIncome = async () => {
 };
 
 /** Account master */
+export const updateAccountMaster = async (payload) => {
+  const businessName = process.env.BUSINESS_NAME;
+  await AccountMaster.findOneAndUpdate(
+    { business: businessName },
+    {
+      $set: {
+        amountOrganization: payload.amountOrganization,
+        amountAdmin: payload.amountAdmin,
+        computerSecurityFee: payload.computerSecurityFee,
+      }
+    },
+    { new: true}
+  )
+  return await getAccountMaster();
+}
+
 export const getAccountMaster = async () => {
   const businessName = process.env.BUSINESS_NAME;
   let accountMaster = await AccountMaster.findOne({ business: businessName });

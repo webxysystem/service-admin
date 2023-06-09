@@ -27,11 +27,11 @@ router.get("/", async (req, res) => {
 router.get("/moderators", async (req, res) => {
   try {
     
-    let { page, size } = req.query;
+    let { page, size, isPayment } = req.query;
     page ? page : (page = 0);
     size ? size : (size = 10);
 
-    const response = await getModerators(page,size).catch(e => {
+    const response = await getModerators(page,size, isPayment).catch(e => {
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });
     res.status(200).send(response)
@@ -89,11 +89,11 @@ router.get("/model/:modelId", async (req, res) => {
 router.get("/models", async (req, res) => {
   try {
     
-    let { page, size } = req.query;
+    let { page, size, isPayment } = req.query;
     page ? page : (page = 0);
     size ? size : (size = 10);
 
-    const response = await getModels( page, size).catch(e => {
+    const response = await getModels(page, size, isPayment).catch(e => {
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });
     res.status(200).send(response)

@@ -8,7 +8,6 @@ import AccountMaster from "../models/accountMaster";
 import { getAccountByUserId, getAccountByModelId } from "./user"
 import { registerTransactionPaymentMethod, registerAdminCommsision, getPlataformComissionByPaymentMethod } from "./balance"
 var ObjectId = require("mongoose").Types.ObjectId;
-import moment from "moment";
 import { getAccountBusinessDetail } from "./management";
 
 const distributionMoney =  {
@@ -23,7 +22,8 @@ export const createAccount = async () => {
     amount: 0,
     frozenAmount: 0,
     transactions: [],
-    enabled: true
+    enabled: true,
+    lastPayment: new Date()
   }
   return await Account.create(account)
 }
@@ -115,7 +115,7 @@ export const getAccounts = async (page, size) => {
   return accounts;
 } */
 
-export const registerPaymentInAccount = async (userId) => {
+export const registerPaymentInAccount = async (userId, voucher) => {
 
   let user = await Model.findById(userId);
   if (user) {
@@ -132,11 +132,11 @@ export const registerPaymentInAccount = async (userId) => {
     account: account._id,
     commissions: account.commissions,
     transactions: account.transactions,
+    voucher,
     date: new Date()
   }
 
   payment = await Payment.create(payment);
-  const today = moment().format("YYYY-MM-DD");
   
   return await Account.findOneAndUpdate(
     { _id: new ObjectId(accountId) },
@@ -145,7 +145,7 @@ export const registerPaymentInAccount = async (userId) => {
         amount: 0,
         commissions: [],
         transactions: [],
-        lastPayment: today
+        lastPayment: new Date()
       },
       $push: {
         payments: {
@@ -209,40 +209,45 @@ export const getPayments = async (page, size) => {
   const models = (await Model.find())?.map(model => model.toObject());
   const moderators = (await User.find())?.map(user => user.toObject());
 
-const currentDate = new Date();
-const dayOfWeek = currentDate.getDay();
-const difference = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; 
-const monday = new Date(currentDate.setDate(currentDate.getDate() + difference));
+  const currentDate = new Date();
+  const dayOfWeek = currentDate.getDay();
+  const difference = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; 
+  const monday = new Date(currentDate.setDate(currentDate.getDate() + difference));
 
   // Obtén la fecha del domingo de esta semana
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
 
-  let payments = await Payment.find(
+  let payments = (await Payment.find(
     {
       date: {
         $gte: monday,
         $lte: sunday,
       }
     }, {},
-    { skip: page * size, limit: size })?.map(pay => pay.toObject());
+    { skip: page * size, limit: size }))?.map(pay => pay.toObject());
+  
   
   if (payments && payments.length > 0) {
       const paymentsIds = payments.map(payment => {
       return new ObjectId(payment._id);
     })
 
-    const accounts = await Account.find({ payments: { $in: paymentsIds } })?.map(acc => acc.toObject());
+    let accounts = (await Account.find({ payments: { $in: paymentsIds } }))?.map(acc => acc.toObject());
 
-      for (const model of models) {
+    for (const model of models) {
       const index = accounts.findIndex(acc => acc?._id.toString() == model.accountId.toString());
-
-      accounts[index].user = model;
+      if (index >= 0) {
+        accounts[index].user = model;
+      }
+      
     }
 
     for (const moderator of moderators) {
       const index = accounts.findIndex(acc => acc?._id.toString() == moderator.accountId.toString())
-      accounts[index].user = moderator;
+      if (index >= 0) {
+        accounts[index].user = moderator;
+      }
     }
 
 

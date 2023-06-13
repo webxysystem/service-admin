@@ -179,17 +179,18 @@ router.post("/register", async (req, res) => {
 
 router.put("/update-password", async (req, res) => {
   try {
-    
+   
     const payload = req.body;
     if (!payload.userId || !payload.password ) {
       throw { code: 400, message: 'Revise su peticion e intente nuevamente'}
     }
 
-    const response = await updatePassword(userId, password).catch(e => {
+    const response = await updatePassword(payload.userId, payload.password).catch(e => {
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });
     res.status(200).send(response)
   } catch (error) {
+     console.log(error);
     if (error.code && error.message) {
       res.status(error.code).json(error.message);
     } else {

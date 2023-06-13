@@ -177,7 +177,7 @@ router.post("/register", async (req, res) => {
   }
 })
 
-router.post("/update-password", async (req, res) => {
+router.put("/update-password", async (req, res) => {
   try {
     
     const payload = req.body;

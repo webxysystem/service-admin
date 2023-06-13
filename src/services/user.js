@@ -32,6 +32,19 @@ export const createUser = async (user) => {
   return await User.create(userEncrypt);
 }
 
+export const updatePassword = async (id, password) => {
+  let user = {
+    id,
+    password
+  }
+  const userEncrypt = await encryptPass(user);
+  return await User.findOneAndUpdate(
+    { _id: new ObjectId(user.id) },
+    { $set: { password: userEncrypt.password } },
+    { new: true}
+  )
+}
+
 export const login = async (user) => {
   const { email, password } = user;
   const userInDataBase = await getUserForEmail(email);

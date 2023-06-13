@@ -1,5 +1,5 @@
 import express from "express";
-import { createUser, login, registerModel, getUsers, getModerators, getModelsByModeratorId, getAccountDetail, getMethodsPaymentAsigne, getModels, getModelFindId } from "../services/user";
+import { createUser, login, registerModel, getUsers, getModerators, getModelsByModeratorId, getAccountDetail, getMethodsPaymentAsigne, getModels, getModelFindId, updatePassword } from "../services/user";
 import { createAccount } from "../services/account";
 import { activateOrDeactivateModel } from "../services/management"
 import auth from "../middlewares/validateToken";
@@ -176,6 +176,29 @@ router.post("/register", async (req, res) => {
     }
   }
 })
+
+router.post("/update-password", async (req, res) => {
+  try {
+    
+    const payload = req.body;
+    if (!payload.userId || !payload.password ) {
+      throw { code: 400, message: 'Revise su peticion e intente nuevamente'}
+    }
+
+    const response = await updatePassword(userId, password).catch(e => {
+      throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
+    });
+    res.status(200).send(response)
+  } catch (error) {
+    if (error.code && error.message) {
+      res.status(error.code).json(error.message);
+    } else {
+      //TODO: send notification support
+      res.status(500).json(error);
+    }
+  }
+})
+
 router.post("/login", async (req, res) => {
   try {
     

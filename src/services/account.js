@@ -6,7 +6,7 @@ import Model from "../models/model";
 import User from "../models/user";
 import AccountMaster from "../models/accountMaster";
 import { getAccountByUserId, getAccountByModelId } from "./user"
-import { registerTransactionPaymentMethod, registerAdminCommsision, getPlataformComissionByPaymentMethod } from "./balance"
+import { registerTransactionPaymentMethod, registerAdminCommsision, getPlataformComissionByPaymentMethod, registerPaymentIntoBalance, getBalanceActive } from "./balance"
 var ObjectId = require("mongoose").Types.ObjectId;
 import { getAccountBusinessDetail } from "./management";
 
@@ -137,6 +137,8 @@ export const registerPaymentInAccount = async (userId, voucher) => {
   }
 
   payment = await Payment.create(payment);
+
+  await registerPaymentIntoBalance(payment)
   
   return await Account.findOneAndUpdate(
     { _id: new ObjectId(accountId) },
@@ -204,29 +206,55 @@ const payFeeForWeekScurityComputer = async (model) => {
     
 }
 
-export const getPayments = async (page, size) => {
+export const getPaymentsIntoBalanceActive = async (page, size) => {
   
   const models = (await Model.find())?.map(model => model.toObject());
   const moderators = (await User.find())?.map(user => user.toObject());
 
-  const currentDate = new Date();
-  const dayOfWeek = currentDate.getDay();
-  const difference = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; 
-  const monday = new Date(currentDate.setDate(currentDate.getDate() + difference));
-
-  // Obtén la fecha del domingo de esta semana
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-
-  let payments = (await Payment.find(
-    {
-      date: {
-        $gte: monday,
-        $lte: sunday,
-      }
-    }, {},
-    { skip: page * size, limit: size }))?.map(pay => pay.toObject());
+  const balance = await getBalanceActive(page, size);
+  let payments = balance?.payments?.map(pay => pay.toObject());
   
+  if (payments && payments.length > 0) {
+      const paymentsIds = payments.map(payment => {
+      return new ObjectId(payment._id);
+    })
+
+    let accounts = (await Account.find({ payments: { $in: paymentsIds } }))?.map(acc => acc.toObject());
+
+    for (const model of models) {
+      const index = accounts.findIndex(acc => acc?._id.toString() == model.accountId.toString());
+      if (index >= 0) {
+        accounts[index].user = model;
+      }
+      
+    }
+
+    for (const moderator of moderators) {
+      const index = accounts.findIndex(acc => acc?._id.toString() == moderator.accountId.toString())
+      if (index >= 0) {
+        accounts[index].user = moderator;
+      }
+    }
+
+
+    for (const account of accounts) {
+      const index = payments.findIndex(pay => pay?.account.toString() == account._id.toString())
+      payments[index].user = account.user;
+    }
+  } else {
+    payments = [];
+  }
+
+  return payments;
+}
+
+export const getPayments = async (page, size) => {
+  const models = (await Model.find())?.map(model => model.toObject());
+  const moderators = (await User.find())?.map(user => user.toObject());
+
+  
+  let payments = (await Payment.find({}, {},
+    { skip: page * size, limit: size }))?.map(pay => pay.toObject());
   
   if (payments && payments.length > 0) {
       const paymentsIds = payments.map(payment => {

@@ -1,6 +1,6 @@
 import express from "express";
 import auth from "../middlewares/validateToken";
-import { getAccountBusiness, getAccountBusinessDetail, getPaymentMethodByAccountBusiness, getPaymentMethodDetail, managementUsersInPaymentMethod, getAllpaymentMethods } from "../services/management"
+import { getAccountBusiness, getAccountBusinessDetail, getPaymentMethodByAccountBusiness, getPaymentMethodDetail, managementUsersInPaymentMethod, getAllpaymentMethods, closeBalance } from "../services/management"
 import { getAccountMaster, updateAccountMaster } from "../services/balance";
 
 let router = express.Router();
@@ -106,6 +106,23 @@ router.get("/payment-methods",  async (req, res) => {
   try {
 
     const response = await getAllpaymentMethods().catch(e => {
+      throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
+    });
+    res.status(200).send(response)
+  } catch (error) {
+    if (error.code && error.message) {
+      res.status(error.code).json(error.message);
+    } else {
+      //TODO: send notification support
+      res.status(500).json(error);
+    }
+  }
+})
+
+router.post("/close-balance",  async (req, res) => {
+  try {
+
+    const response = await closeBalance().catch(e => {
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });
     res.status(200).send(response)

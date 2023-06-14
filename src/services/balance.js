@@ -1,6 +1,5 @@
-//import Income from "../models/income";
 import Commission from "../models/commission";
-//import BalanceSheet from "../models/balanceSheet";
+import BalanceSheet from "../models/balanceSheet";
 import AccountBusiness from "../models/accountBusiness";
 //import Account from "../models/account";
 import PaymentMethod from "../models/paymentMethod";
@@ -350,8 +349,104 @@ const createNewIncome = async () => {
     date: moment().format("YYYY-MM-DD"),
     closed: false,
   };
-  return await Income.create(newIncome);
+  const income = await Income.create(newIncome);
+  await registerIncomeIntoBalance(income);
+  return income;
 };
+
+const registerIncomeIntoBalance = async (income) => {
+  const balanceActive = await BalanceSheet.findOne({ closed: false });
+  if (balanceActive) {
+
+    await BalanceSheet.findOneAndUpdate(
+      {  closed: false },
+      {
+        $inc: {
+          totalProfit: income.totalProfit,
+        },
+        $push: {
+          incomes: {
+            $each: [income._id],
+            $position: 0,
+          },
+        },
+      },
+      { new: true }
+    );
+  } else {
+    
+    const newBalance = {
+      totalProfit: 0,
+      incomes: [income._id],
+      payments: [],
+      dateOpen: new Date(), 
+      closed: false,
+    };
+
+    await BalanceSheet.create(newBalance);
+  }
+}
+
+export const registerPaymentIntoBalance = async (payment) => {
+  const balanceActive = await BalanceSheet.findOne({ closed: false });
+  if (balanceActive) {
+
+    await BalanceSheet.findOneAndUpdate(
+      {  closed: false },
+      {
+        $push: {
+          payments: {
+            $each: [payment._id],
+            $position: 0,
+          },
+        },
+      },
+      { new: true }
+    );
+  } else {
+    
+    const newBalance = {
+      totalProfit: 0,
+      incomes: [],
+      payments: [payment._id],
+      dateOpen: new Date(), 
+      closed: false,
+    };
+
+    await BalanceSheet.create(newBalance);
+  }
+}
+
+export const closeBalance = async () => {
+  await BalanceSheet.findOneAndUpdate(
+    {  closed: false },
+    {
+      $set: {
+        closed: false,
+        dateClose: new Date()
+      },
+    },
+    { new: true }
+  );
+
+  const newBalance = {
+    totalProfit: 0,
+    incomes: [],
+    payments: [],
+    dateOpen: new Date(), 
+    closed: false,
+  };
+
+  return await BalanceSheet.create(newBalance);
+}
+
+export const getBalanceActive = async (page, size) => {
+  return await BalanceSheet.findOne({ closed: false }).populate({
+    path: "payments",
+    options: { skip: page * size, limit: size }}).populate({
+    path: "incomes",
+    options: { skip: page * size, limit: size }})
+}
 
 /** Account master */
 export const updateAccountMaster = async (payload) => {

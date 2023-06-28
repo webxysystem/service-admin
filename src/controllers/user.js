@@ -1,5 +1,5 @@
 import express from "express";
-import { createUser, login, registerModel, getUsers, getModerators, getModelsByModeratorId, getAccountDetail, getMethodsPaymentAsigne, getModels, getModelFindId, updatePassword } from "../services/user";
+import { createUser, login, registerModel, getUsers, getModerators, getModelsByModeratorId, getAccountDetail, getMethodsPaymentAsigne, getModels, getModelFindId, updatePassword, getModelsAndModeratorsNameAndId } from "../services/user";
 import { createAccount } from "../services/account";
 import { activateOrDeactivateModel } from "../services/management"
 import auth from "../middlewares/validateToken";
@@ -32,6 +32,24 @@ router.get("/moderators", async (req, res) => {
     size ? size : (size = 10);
 
     const response = await getModerators(page,size, isPayment).catch(e => {
+      throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
+    });
+    res.status(200).send(response)
+  } catch (error) {
+    if (error.code && error.message) {
+      res.status(error.code).json(error.message);
+    } else {
+      //TODO: send notification support
+      res.status(500).json(error);
+    }
+  }
+})
+
+router.get("/all-names-users", async (req, res) => {
+  try {
+    
+    const response = await getModelsAndModeratorsNameAndId().catch(e => {
+      console.log(e);
       throw { code: 400, message: "Error en la consulta a la base de datos, por favor revisa los parametros e intenta nuevamente" }
     });
     res.status(200).send(response)

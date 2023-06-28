@@ -230,3 +230,17 @@ const getTime = (seconds) => {
 
   return result;
 }
+
+export const getModelsAndModeratorsNameAndId = async() =>{
+  let users = [];
+  const moderators = await User.find();
+  for (const moderator of moderators) {
+    users.push({name: moderator.name, _id: moderator._id})
+  }
+  const models = await Model.find();
+  for (const model of models) {
+    users.push({name: model.name, _id: model._id})
+  }
+
+  return users;
+}

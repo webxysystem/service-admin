@@ -4,8 +4,9 @@ import Model from "../models/model";
 var ObjectId = require("mongoose").Types.ObjectId;
 
 export const createDebst = async (payload) => {
+  const isModel = await Model.findById(payload.userId);
   let debts;
-  if (payload.isModel) {
+  if (isModel) {
     debts = {
       amount: payload.amount,
       weeklyDiscount: payload.weeklyDiscount,

@@ -117,6 +117,9 @@ export const getAccounts = async (page, size) => {
 
 export const registerPaymentInAccount = async (userId, voucher) => {
 
+  //descontar el pago semanal si tiene una deuda
+  await addPayment(userId);
+
   let user = await Model.findById(userId);
   if (user) {
     await payFeeForWeekScurityComputer(user);

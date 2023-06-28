@@ -49,7 +49,7 @@ router.post("/create", async (req, res) => {
   try {
 
     const payload = req.body;
-    if (!payload.amount || !payload.weeklyDiscount || !payload.userId || !payload.isModel) {
+    if (!payload.amount || !payload.weeklyDiscount || !payload.userId) {
       throw { code: 400, message: 'Revise su peticion e intente nuevamente' }
     }
 

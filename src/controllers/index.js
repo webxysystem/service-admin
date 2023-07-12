@@ -4,6 +4,7 @@ import transactionRouter from "./transactions"
 import managementRouter from "./management"
 import accontRouter from "./accounts"
 import debstRouter from "./debts"
+import authAdminRouter from './authAdmin'
 const router = express.Router();
 
 function createRouter(app) {
@@ -19,6 +20,8 @@ function createRouter(app) {
   router.use('/management', managementRouter);
   router.use('/accounts', accontRouter);
   router.use('/debts', debstRouter);
+  router.use('/auth-admin', authAdminRouter);
+
 }
 
 
